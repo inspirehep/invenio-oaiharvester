@@ -128,7 +128,7 @@ class OaiHarvesterTests(InvenioTestCase):
             until_date='2015-01-20',
             url='http://export.arxiv.org/oai2',
             name=None,
-            setSpec='cs physics'
+            setspecs='cs physics'
         )
         # 46 cs + 150 physics - 6 dupes == 190
         self.assertTrue(len(records) == 190)

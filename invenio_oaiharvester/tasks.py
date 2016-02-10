@@ -47,7 +47,7 @@ def get_specific_records(identifiers, metadata_prefix=None, url=None,
 
 @celery.task
 def list_records_from_dates(metadata_prefix=None, from_date=None, until_date=None, url=None,
-                            name=None, setSpec=None, signals=True, **kwargs):
+                            name=None, setspecs=None, signals=True, **kwargs):
     """Call the module API, in order to harvest records from an OAI repo,
     based on datestamp and/or set parameters.
 
@@ -56,10 +56,10 @@ def list_records_from_dates(metadata_prefix=None, from_date=None, until_date=Non
     :param until_date: The upper bound date for the harvesting (optional).
     :param url: The The url to be used to create the endpoint.
     :param name: The name of the OaiHARVEST object that we want to use to create the endpoint.
-    :param setSpec: The 'set' criteria for the harvesting (optional).
+    :param setspecs: The 'set' criteria for the harvesting (optional).
     :param signals: If signals should be emitted about results.
     """
-    request, records = list_records(metadata_prefix, from_date, until_date, url, name, setSpec)
+    request, records = list_records(metadata_prefix, from_date, until_date, url, name, setspecs)
     if signals:
         oaiharvest_finished.send(request, records=records, name=name, **kwargs)
     return records
