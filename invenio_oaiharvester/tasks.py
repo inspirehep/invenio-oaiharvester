@@ -28,7 +28,7 @@ from .utils import get_identifier_names
 
 @celery.task
 def get_specific_records(identifiers, metadata_prefix=None, url=None,
-                         name=None, directory=None, signals=True, **kwargs):
+                         name=None, signals=True, **kwargs):
     """Call the module API, in order to harvest specific records from an OAI repo,
     based on their unique identifiers.
 
@@ -36,7 +36,6 @@ def get_specific_records(identifiers, metadata_prefix=None, url=None,
     :param identifiers: A list of unique identifiers for records to be harvested.
     :param url: The The url to be used to create the endpoint.
     :param name: The name of the OaiHARVEST object that we want to use to create the endpoint.
-    :param directory: The directory that we want to send the harvesting results.
     :param signals: If signals should be emitted about results.
     """
     identifiers = get_identifier_names(identifiers)
@@ -48,7 +47,7 @@ def get_specific_records(identifiers, metadata_prefix=None, url=None,
 
 @celery.task
 def list_records_from_dates(metadata_prefix=None, from_date=None, until_date=None, url=None,
-                            name=None, setSpec=None, directory=None, signals=True, **kwargs):
+                            name=None, setSpec=None, signals=True, **kwargs):
     """Call the module API, in order to harvest records from an OAI repo,
     based on datestamp and/or set parameters.
 
@@ -58,7 +57,6 @@ def list_records_from_dates(metadata_prefix=None, from_date=None, until_date=Non
     :param url: The The url to be used to create the endpoint.
     :param name: The name of the OaiHARVEST object that we want to use to create the endpoint.
     :param setSpec: The 'set' criteria for the harvesting (optional).
-    :param directory: The directory that we want to send the harvesting results.
     :param signals: If signals should be emitted about results.
     """
     request, records = list_records(metadata_prefix, from_date, until_date, url, name, setSpec)

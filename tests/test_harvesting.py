@@ -27,7 +27,10 @@ from invenio_testing import InvenioTestCase
 
 class OaiHarvesterModelTests(InvenioTestCase):
 
+    """Test OaiHARVEST model."""
+
     def setUp(self):
+        """Create a sample model and save it."""
         from invenio_oaiharvester.models import OaiHARVEST
         source = OaiHARVEST(
             name="arXiv",
@@ -40,6 +43,7 @@ class OaiHarvesterModelTests(InvenioTestCase):
         self.source_id = source.id
 
     def tearDown(self):
+        """Remove sample model."""
         from invenio_oaiharvester.models import OaiHARVEST
         OaiHARVEST.query.filter(OaiHARVEST.id == self.source_id).delete()
 
@@ -59,7 +63,7 @@ class OaiHarvesterModelTests(InvenioTestCase):
 
         _, records = get_records(['oai:arXiv.org:1507.03011'],
                                  name='arXiv')
-        assert len(records) == 1
+        self.assertTrue(len(records) == 1)
 
     @responses.activate
     def test_model_based_harvesting_list(self):
@@ -82,23 +86,28 @@ class OaiHarvesterModelTests(InvenioTestCase):
 
         _, records = list_records(name='arXiv')
 
-        assert len(records) == 150
-        assert last_updated < get_oaiharvest_object('arXiv').lastrun
+        self.assertTrue(len(records) == 150)
+        self.assertTrue(last_updated < get_oaiharvest_object('arXiv').lastrun)
 
 
 class OaiHarvesterTests(InvenioTestCase):
 
+    """Test harvesting API functions."""
+
     def test_raise_missing_info(self):
+        """Check that the proper exception is raised if name or url is missing."""
         from invenio_oaiharvester.errors import NameOrUrlMissing
         self.assertRaises(NameOrUrlMissing, list_records)
 
     @responses.activate
     def test_list_records(self):
         raw_cs_xml = open(os.path.join(
-            os.path.dirname(__file__), "data/sample_arxiv_response_listrecords_cs.xml"
+            os.path.dirname(__file__),
+            "data/sample_arxiv_response_listrecords_cs.xml"
         )).read()
         raw_physics_xml = open(os.path.join(
-            os.path.dirname(__file__), "data/sample_arxiv_response_listrecords_physics.xml"
+            os.path.dirname(__file__),
+            "data/sample_arxiv_response_listrecords_physics.xml"
         )).read()
 
         responses.add(
@@ -121,10 +130,11 @@ class OaiHarvesterTests(InvenioTestCase):
             name=None,
             setSpec='cs physics'
         )
-        assert len(records) == 196   # 46 cs + 150 physics
+        self.assertTrue(len(records) == 196)   # 46 cs + 150 physics
 
     @responses.activate
     def test_get_from_identifiers(self):
+        """Test that getting records via identifiers work."""
         raw_xml = open(os.path.join(
             os.path.dirname(__file__), "data/sample_oai_dc_response.xml"
         )).read()
@@ -147,6 +157,7 @@ class OaiHarvesterTests(InvenioTestCase):
 
     @responses.activate
     def test_get_from_identifiers_with_prefix(self):
+        """Test that getting records via identifiers work with prefix."""
         raw_xml = open(os.path.join(
             os.path.dirname(__file__), "data/sample_arxiv_response.xml"
         )).read()

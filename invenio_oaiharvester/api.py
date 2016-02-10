@@ -28,7 +28,7 @@ from .utils import get_oaiharvest_object
 
 
 def list_records(metadata_prefix=None, from_date=None, until_date=None,
-                 url=None, name=None, setSpec=None):
+                 url=None, name=None, setspecs=None):
     """Harvest records from an OAI repo, based on datestamp and/or set parameters.
 
     :param metadata_prefix: The prefix for the metadata return (defaults to 'oai_dc').
@@ -36,18 +36,18 @@ def list_records(metadata_prefix=None, from_date=None, until_date=None,
     :param until_date: The upper bound date for the harvesting (optional).
     :param url: The The url to be used to create the endpoint.
     :param name: The name of the OaiHARVEST object that we want to use to create the endpoint.
-    :param setSpec: The 'set' criteria for the harvesting (optional).
+    :param setspecs: The 'set' criteria for the harvesting (optional).
     :return: An iterator of harvested records.
     """
     if name:
-        url, _metadata_prefix, lastrun, _setSpec = get_info_by_oai_name(name)
+        url, _metadata_prefix, lastrun, _setspecs = get_info_by_oai_name(name)
 
         # In case we provide a prefix, we don't want it to be
         # overwritten by the one we get from the name variable.
         if metadata_prefix is None:
             metadata_prefix = _metadata_prefix
-        if setSpec is None:
-            setSpec = _setSpec
+        if setspecs is None:
+            setspecs = _setspecs
     elif not url:
         raise NameOrUrlMissing("Retry using the parameters -n <name> or -u <url>.")
 
@@ -66,10 +66,11 @@ def list_records(metadata_prefix=None, from_date=None, until_date=None,
 
     lastrun_date = datetime.datetime.now()
     records = []
-    for spec in setSpec.split():
-        records.extend(list(request.ListRecords(metadataPrefix=metadata_prefix or "oai_dc",
-                                                set=spec,
-                                                **dates)))
+    for spec in setspecs.split():
+        for record in request.ListRecords(metadataPrefix=metadata_prefix or "oai_dc",
+                                          set=spec,
+                                          **dates):
+            records.append(record)
     # Update lastrun?
     if from_date is None and until_date is None and name is not None:
         oai_source = get_oaiharvest_object(name)

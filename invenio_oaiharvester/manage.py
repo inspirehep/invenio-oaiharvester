@@ -39,7 +39,7 @@ manager = Manager(description=__doc__)
                 help="The prefix for the metadata return (e.g. 'oai_dc')")
 @manager.option('-n', '--name', dest='name', default=None,
                 help="The name of the OaiHARVEST object that we want to use to create the endpoint.")
-@manager.option('-s', '--setSpec', dest='setSpec', default=None,
+@manager.option('-s', '--setspecs', dest='setspecs', default=None,
                 help="The 'set' criteria for the harvesting (optional).")
 @manager.option('-i', '--identifiers', dest='identifiers', default=None,
                 help="A list of unique identifiers for records to be harvested.")
@@ -59,7 +59,7 @@ manager = Manager(description=__doc__)
                 help="Enqueue harvesting and return immediately.")
 @manager.option('-p', '--no-signals', dest='signals', action="store_false", default=True,
                 help="No signals sent with OAI-PMH harvesting results.")
-def harvest(metadata_prefix, name, setSpec, identifiers, from_date,
+def harvest(metadata_prefix, name, setspecs, identifiers, from_date,
             until_date, url, directory, arguments, quiet, enqueue, signals):
     """Harvest records from an OAI repository."""
     arguments = dict(x.split('=', 1) for x in arguments)
@@ -68,7 +68,7 @@ def harvest(metadata_prefix, name, setSpec, identifiers, from_date,
         # - url / name is used for the endpoint
         # - from_date / lastrun is used for the dates (until_date optionally if from_date is used)
         params = (metadata_prefix, from_date, until_date, url,
-                  name, setSpec, directory, signals)
+                  name, setspecs, directory, signals)
         if enqueue:
             job = list_records_from_dates.delay(*params, **arguments)
             print("Scheduled job {0}".format(job.id))

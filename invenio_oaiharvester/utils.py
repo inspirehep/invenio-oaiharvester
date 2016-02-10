@@ -24,11 +24,13 @@ from __future__ import absolute_import, print_function, unicode_literals
 import os
 import re
 import sys
+
 from datetime import datetime
 
 from lxml import etree
 
-from invenio_base.globals import cfg
+from flask import current_app
+
 from invenio_utils.shell import run_shell_command
 
 REGEXP_OAI_ID = re.compile("<identifier.*?>(.*?)<\/identifier>", re.DOTALL)
@@ -69,7 +71,7 @@ def record_extraction_from_string(xml_string, oai_namespace="http://www.openarch
             'OAI-PMH': oai_namespace
         }
     else:
-        nsmap = cfg.get("OAIHARVESTER_DEFAULT_NAMESPACE_MAP")
+        nsmap = current_app.config.get("OAIHARVESTER_DEFAULT_NAMESPACE_MAP")
     namespace_prefix = "{{{0}}}".format(oai_namespace)
     root = etree.fromstring(xml_string)
     headers = []
@@ -105,63 +107,12 @@ def identifier_extraction_from_string(xml_string, oai_namespace="http://www.open
             'OAI-PMH': oai_namespace
         }
     else:
-        nsmap = cfg.get("OAIHARVESTER_DEFAULT_NAMESPACE_MAP")
+        nsmap = current_app.config.get("OAIHARVESTER_DEFAULT_NAMESPACE_MAP")
     namespace_prefix = "{{{0}}}".format(oai_namespace)
     root = etree.fromstring(xml_string)
     node = root.find(".//{0}identifier".format(namespace_prefix), nsmap)
     if node is not None:
         return node.text
-
-
-def collect_identifiers(harvested_file_list):
-    """Collect all OAI PMH identifiers from each file in the list.
-
-    Then adds them to a list of identifiers per file.
-
-    :param harvested_file_list: list of filepaths to harvested files
-
-    :return list of lists, containing each files' identifier list
-    """
-    result = []
-    for harvested_file in harvested_file_list:
-        try:
-            fd_active = open(harvested_file)
-        except IOError as e:
-            raise e
-        data = fd_active.read()
-        fd_active.close()
-        result.append(REGEXP_OAI_ID.findall(data))
-    return result
-
-
-def find_matching_files(basedir, filetypes):
-    """Try to find all files matching given filetypes.
-
-    By looking at all the files and filenames in the given directory,
-    including subdirectories.
-
-    :param basedir: full path to base directory to search in
-    :type basedir: string
-
-    :param filetypes: list of filetypes, extensions
-    :type filetypes: list
-
-    :return: exitcode and any error messages as: (exitcode, err_msg)
-    :rtype: tuple
-    """
-    files_list = []
-    for dirpath, dummy0, filenames in os.walk(basedir):
-        for filename in filenames:
-            full_path = os.path.join(dirpath, filename)
-            dummy1, cmd_out, dummy2 = run_shell_command(
-                'file %s', (full_path,)
-            )
-            for filetype in filetypes:
-                if cmd_out.lower().find(filetype) > -1:
-                    files_list.append(full_path)
-                elif filename.split('.')[-1].lower() == filetype:
-                    files_list.append(full_path)
-    return files_list
 
 
 def get_identifier_names(identifiers):
@@ -186,7 +137,7 @@ def check_or_create_dir(output_dir):
 
     :param output_dir: The directory where the output should be sent.
     """
-    default = cfg['OAIHARVESTER_STORAGEDIR']
+    default = current_app.config['OAIHARVESTER_STORAGEDIR']
     path = os.path.join(default, output_dir)
 
     if not os.path.exists(path):
