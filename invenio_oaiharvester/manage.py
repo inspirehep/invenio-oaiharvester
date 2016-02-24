@@ -68,7 +68,7 @@ def harvest(metadata_prefix, name, setspecs, identifiers, from_date,
         # - url / name is used for the endpoint
         # - from_date / lastrun is used for the dates (until_date optionally if from_date is used)
         params = (metadata_prefix, from_date, until_date, url,
-                  name, setspecs, directory, signals)
+                  name, setspecs, signals)
         if enqueue:
             job = list_records_from_dates.delay(*params, **arguments)
             print("Scheduled job {0}".format(job.id))
@@ -80,7 +80,7 @@ def harvest(metadata_prefix, name, setspecs, identifiers, from_date,
 
         # If identifiers are provided, we schedule an immediate run using them.
         params = (identifiers, metadata_prefix, url,
-                  name, directory, signals)
+                  name, signals)
         if enqueue:
             job = get_specific_records.delay(*params, **arguments)
             print("Scheduled job {0}".format(job.id))
