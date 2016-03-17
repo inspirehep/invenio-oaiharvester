@@ -30,4 +30,4 @@ and parsed by ``setup.py``.
 
 from __future__ import absolute_import, print_function, unicode_literals
 
-__version__ = "0.1.2.dev20150825"
+__version__ = "0.1.2.dev20160322"
