@@ -130,7 +130,8 @@ class OaiHarvesterTests(InvenioTestCase):
             name=None,
             setSpec='cs physics'
         )
-        self.assertTrue(len(records) == 196)   # 46 cs + 150 physics
+        # 46 cs + 150 physics - 6 dupes == 190
+        self.assertTrue(len(records) == 190)
 
     @responses.activate
     def test_get_from_identifiers(self):

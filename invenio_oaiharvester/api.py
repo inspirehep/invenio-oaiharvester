@@ -67,13 +67,15 @@ def list_records(metadata_prefix=None, from_date=None, until_date=None,
 
     lastrun_date = datetime.datetime.now()
 
-    records = []
+    # Use a dict to only return the same record once
+    # (e.g. if it is part of several sets)
+    records = {}
     for spec in setspecs.split():
         try:
             for record in request.ListRecords(metadataPrefix=metadata_prefix or "oai_dc",
                                               set=spec,
                                               **dates):
-                records.append(record)
+                records[record.header.identifier] = record
         except NoRecordsMatch:
             continue
 
@@ -82,7 +84,7 @@ def list_records(metadata_prefix=None, from_date=None, until_date=None,
         oai_source = get_oaiharvest_object(name)
         oai_source.update_lastrun(lastrun_date)
         oai_source.save()
-    return request, records
+    return request, records.values()
 
 
 def get_records(identifiers, metadata_prefix=None, url=None, name=None):
