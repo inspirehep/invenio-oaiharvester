@@ -24,12 +24,15 @@ from __future__ import absolute_import, print_function, unicode_literals
 from invenio_ext.script import Manager
 
 from .errors import IdentifiersOrDates
+from .api import get_records, list_records
+from .signals import oaiharvest_finished
 from .tasks import get_specific_records, list_records_from_dates
 from .utils import (
     write_to_dir,
     print_to_stdout,
     print_total_records,
     print_files_created,
+    get_identifier_names,
 )
 
 manager = Manager(description=__doc__)
@@ -63,6 +66,7 @@ def harvest(metadata_prefix, name, setspecs, identifiers, from_date,
             until_date, url, directory, arguments, quiet, enqueue, signals):
     """Harvest records from an OAI repository."""
     arguments = dict(x.split('=', 1) for x in arguments)
+    records = None
     if identifiers is None:
         # If no identifiers are provided, a harvest is scheduled:
         # - url / name is used for the endpoint
@@ -73,7 +77,8 @@ def harvest(metadata_prefix, name, setspecs, identifiers, from_date,
             job = list_records_from_dates.delay(*params, **arguments)
             print("Scheduled job {0}".format(job.id))
         else:
-            records = list_records_from_dates(*params, **arguments)
+            request, records = list_records(metadata_prefix, from_date, until_date, url, name, setspecs)
+
     else:
         if (from_date is not None) or (until_date is not None):
             raise IdentifiersOrDates("Identifiers cannot be used in combination with dates.")
@@ -85,14 +90,20 @@ def harvest(metadata_prefix, name, setspecs, identifiers, from_date,
             job = get_specific_records.delay(*params, **arguments)
             print("Scheduled job {0}".format(job.id))
         else:
-            records = get_specific_records(*params, **arguments)
-    if directory:
-        files_created, total = write_to_dir(records, directory)
-        print_files_created(files_created)
-        print_total_records(total)
-    elif not quiet:
-        total = print_to_stdout(records)
-        print_total_records(total)
+            identifiers = get_identifier_names(identifiers)
+            request, records = get_records(identifiers, metadata_prefix, url, name)
+
+    if records:
+        if signals:
+            oaiharvest_finished.send(request, records=records, name=name, **arguments)
+
+        if directory:
+            files_created, total = write_to_dir(records, directory)
+            print_files_created(files_created)
+            print_total_records(total)
+        elif not quiet:
+            total = print_to_stdout(records)
+            print_total_records(total)
 
 
 def main():

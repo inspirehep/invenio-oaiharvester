@@ -42,7 +42,6 @@ def get_specific_records(identifiers, metadata_prefix=None, url=None,
     request, records = get_records(identifiers, metadata_prefix, url, name)
     if signals:
         oaiharvest_finished.send(request, records=records, name=name, **kwargs)
-    return records
 
 
 @celery.task
@@ -62,4 +61,3 @@ def list_records_from_dates(metadata_prefix=None, from_date=None, until_date=Non
     request, records = list_records(metadata_prefix, from_date, until_date, url, name, setspecs)
     if signals:
         oaiharvest_finished.send(request, records=records, name=name, **kwargs)
-    return records
